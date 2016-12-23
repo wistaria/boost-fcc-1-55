@@ -154,7 +154,7 @@ void perl_matcher<BidiIterator, Allocator, traits>::estimate_max_state_count(std
 }
 
 template <class BidiIterator, class Allocator, class traits>
-inline void perl_matcher<BidiIterator, Allocator, traits>::estimate_max_state_count(void*)
+void perl_matcher<BidiIterator, Allocator, traits>::estimate_max_state_count(void*)
 {
    // we don't know how long the sequence is:
    max_state_count = BOOST_REGEX_MAX_STATE_COUNT;
@@ -162,7 +162,7 @@ inline void perl_matcher<BidiIterator, Allocator, traits>::estimate_max_state_co
 
 #ifdef BOOST_REGEX_HAS_MS_STACK_GUARD
 template <class BidiIterator, class Allocator, class traits>
-inline bool perl_matcher<BidiIterator, Allocator, traits>::protected_call(
+bool perl_matcher<BidiIterator, Allocator, traits>::protected_call(
    protected_proc_type proc)
 {
    ::boost::re_detail::concrete_protected_call
@@ -174,7 +174,7 @@ inline bool perl_matcher<BidiIterator, Allocator, traits>::protected_call(
 #endif
 
 template <class BidiIterator, class Allocator, class traits>
-inline bool perl_matcher<BidiIterator, Allocator, traits>::match()
+bool perl_matcher<BidiIterator, Allocator, traits>::match()
 {
 #ifdef BOOST_REGEX_HAS_MS_STACK_GUARD
    return protected_call(&perl_matcher<BidiIterator, Allocator, traits>::match_imp);
@@ -224,7 +224,7 @@ bool perl_matcher<BidiIterator, Allocator, traits>::match_imp()
 }
 
 template <class BidiIterator, class Allocator, class traits>
-inline bool perl_matcher<BidiIterator, Allocator, traits>::find()
+bool perl_matcher<BidiIterator, Allocator, traits>::find()
 {
 #ifdef BOOST_REGEX_HAS_MS_STACK_GUARD
    return protected_call(&perl_matcher<BidiIterator, Allocator, traits>::find_imp);
@@ -730,7 +730,7 @@ bool perl_matcher<BidiIterator, Allocator, traits>::match_backstep()
 }
 
 template <class BidiIterator, class Allocator, class traits>
-inline bool perl_matcher<BidiIterator, Allocator, traits>::match_assert_backref()
+bool perl_matcher<BidiIterator, Allocator, traits>::match_assert_backref()
 {
    // return true if marked sub-expression N has been matched:
    int index = static_cast<const re_brace*>(pstate)->index;
