@@ -49,7 +49,7 @@
 
     #include <boost/atomic/detail/linux-arm.hpp>
 
-#elif defined(__GNUC__) && defined(__sparc_v9__)
+#elif defined(__GNUC__) && defined(__sparc_v9__) && !defined(__FCC_VERSION)
 
     #include <boost/atomic/detail/gcc-sparcv9.hpp>
 

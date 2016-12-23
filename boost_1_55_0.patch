@@ -41,6 +41,19 @@ index dd31089..9efc2ce 100644
 +       // && !defined(__ICC) && !defined(__ECC) && !defined(__PATHSCALE__) && !defined(__FCC_VERSION)
  
  #endif // BOOST_ASIO_DETAIL_GCC_SYNC_FENCED_BLOCK_HPP
+diff --git boost_1_55_0/boost/atomic/detail/platform.hpp boost_1_55_0/boost/atomic/detail/platform.hpp
+index 3dfb73d..625adc5 100644
+--- boost_1_55_0/boost/atomic/detail/platform.hpp
++++ boost_1_55_0/boost/atomic/detail/platform.hpp
+@@ -49,7 +49,7 @@
+ 
+     #include <boost/atomic/detail/linux-arm.hpp>
+ 
+-#elif defined(__GNUC__) && defined(__sparc_v9__)
++#elif defined(__GNUC__) && defined(__sparc_v9__) && !defined(__FCC_VERSION)
+ 
+     #include <boost/atomic/detail/gcc-sparcv9.hpp>
+ 
 diff --git boost_1_55_0/boost/config/stdlib/stlport.hpp boost_1_55_0/boost/config/stdlib/stlport.hpp
 index bcc30b9..b66f697 100644
 --- boost_1_55_0/boost/config/stdlib/stlport.hpp
@@ -104,3 +117,134 @@ index 16de21d..94d2a9a 100644
  
  #define BOOST_SP_HAS_SYNC
  
+diff --git boost_1_55_0/tools/build/v2/tools/fccx.jam boost_1_55_0/tools/build/v2/tools/fccx.jam
+new file mode 100644
+index 0000000..e684ddc
+--- /dev/null
++++ boost_1_55_0/tools/build/v2/tools/fccx.jam
+@@ -0,0 +1,83 @@
++#  Copyright (C) Synge Todo 2015. Permission to copy, use,
++#  modify, sell and distribute this software is granted provided this
++#  copyright notice appears in all copies. This software is provided
++#  "as is" without express or implied warranty, and with no claim as
++#  to its suitability for any purpose.
++
++# Boost.Build V2 toolset for Fujitsu FCC (cross copiler)
++
++import property ;
++import generators ;
++import os ;
++import toolset : flags ;
++import feature ;
++import type ;
++import common ;
++
++feature.extend toolset : fccx ;
++toolset.inherit  fccx : unix ;
++generators.override fccx.prebuilt : builtin.prebuilt ;
++generators.override fccx.searched-lib-generator : searched-lib-generator ;
++
++rule init ( version ? : command * : options * ) 
++{
++    local condition = [ 
++      common.check-init-parameters fccx : version $(version) ] ;
++    
++    command = [ common.get-invocation-command fccx : FCCpx
++        : $(command) : "FCCpx" ] ;
++
++    common.handle-options fccx : $(condition) : $(command) : $(options) ;
++    
++    command_c = $(command[1--2]) $(command[-1]:B=fccpx) ;
++
++    toolset.flags fccx CONFIG_C_COMMAND $(condition) : $(command_c) ;
++}
++
++# Declare generators
++generators.register-c-compiler fccx.compile.c : C : OBJ : <toolset>fccx ;
++generators.register-c-compiler fccx.compile.c++ : CPP : OBJ : <toolset>fccx ;
++
++flags fccx OPTIONS <link>shared : -KPIC ;
++
++flags fccx.compile OPTIONS <cflags> ;
++flags fccx.compile.c++ OPTIONS <cxxflags> ;
++flags fccx.compile DEFINES <define> ;
++flags fccx.compile INCLUDES <include> ;
++
++actions compile.c
++{
++    "$(CONFIG_C_COMMAND)" -w -Xg -mt -Kfast,ocl,ilfunc -Nnoline --alternative_tokens $(OPTIONS) -D$(DEFINES) -I"$(INCLUDES)" -c -o "$(<)" "$(>)"
++}
++
++actions compile.c++
++{
++    "$(CONFIG_COMMAND)" -w -Xg -mt -Kfast,ocl,ilfunc -Nnoline --alternative_tokens $(OPTIONS) -D$(DEFINES) -I"$(INCLUDES)" -c -o "$(<)" "$(>)"
++}
++
++rule link ( targets * : sources * : properties * )
++{
++    SPACE on $(targets) = " " ;
++}
++
++actions link bind LIBRARIES
++{
++    "$(CONFIG_COMMAND)" -w -Xg -mt $(OPTIONS) -L"$(LINKPATH)" -R"$(RPATH)" -o "$(<)" "$(>)" "$(LIBRARIES)" -l$(FINDLIBS-SA) -l$(FINDLIBS-ST)
++}
++
++# Slight mods for dlls
++rule link.dll ( targets * : sources * : properties * )
++{
++    SPACE on $(targets) = " " ;
++}
++
++actions link.dll bind LIBRARIES
++{
++    "$(CONFIG_COMMAND)" -w -Xg -mt $(OPTIONS) -L"$(LINKPATH)" -R"$(RPATH)" -o "$(<)" "$(>)" "$(LIBRARIES)" -shared -l$(FINDLIBS-SA) -l$(FINDLIBS-ST)
++}
++
++# Declare action for creating static libraries
++actions piecemeal archive
++{
++    ar -rc$(ARFLAGS:E=) "$(<)" "$(>)"
++}
+diff --git boost_1_55_0/tools/build/v2/tools/mpi.jam boost_1_55_0/tools/build/v2/tools/mpi.jam
+index 0fe490b..03c2352 100644
+--- boost_1_55_0/tools/build/v2/tools/mpi.jam
++++ boost_1_55_0/tools/build/v2/tools/mpi.jam
+@@ -328,7 +328,8 @@ rule init ( mpicxx ? : options * : mpirun-with-options * )
+       result = [ SHELL "$(command) -showme" ] ;
+     }
+     # Look for MPICH
+-    else if [ safe-shell-command "$(command) -show" ]
++    else if [ safe-shell-command "$(command) -show" ] &&
++              [ safe-shell-command "$(command) -compile_info" ]
+     {
+       if $(.debug-configuration)
+       {
+@@ -337,6 +338,27 @@ rule init ( mpicxx ? : options * : mpirun-with-options * )
+       compile_flags = [ SHELL "$(command) -compile_info" ] ;
+       link_flags = [ SHELL "$(command) -link_info" ] ;
+     }
++    # Look for MPT
++    else if [ safe-shell-command "$(command) -show" ]
++    {
++      if $(.debug-configuration)
++      {
++        ECHO "Found MPT wrapper compiler: $(command)" ;
++      }
++
++      # 
++      compile_flags = [ SHELL "$(command) -show -c -v 2>/dev/null" ] ;
++      local front = [ MATCH "(.*)-v" :  $(compile_flags) ] ;
++      local back = [ MATCH "-v(.*)" :  $(compile_flags) ] ;
++      compile_flags = "$(front) $(back)" ;
++      front = [ MATCH "(.*)-c" :  $(compile_flags) ] ;
++      back = [ MATCH "-c(.*)" :  $(compile_flags) ] ;
++      compile_flags = "$(front) $(back)" ;
++      link_flags = [ SHELL "$(command) -show -v 2>/dev/null" ] ;
++      front = [ MATCH "(.*)-v" :  $(link_flags) ] ;
++      back = [ MATCH "-v(.*)" :  $(link_flags) ] ;
++      link_flags = "$(front) $(back)" ;
++    }
+     # Sun HPC and Ibm POE
+     else if [ SHELL "$(command) -v 2>/dev/null" ]
+     {
