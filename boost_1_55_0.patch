@@ -91,6 +91,19 @@ index ed2291d..101d808 100644
  
  #include <cmath>
  #include <istream>
+diff --git boost_1_55_0/boost/log/detail/config.hpp boost_1_55_0/boost/log/detail/config.hpp
+index 1955897..341d790 100644
+--- boost_1_55_0/boost/log/detail/config.hpp
++++ boost_1_55_0/boost/log/detail/config.hpp
+@@ -78,7 +78,7 @@
+ #   endif
+ #endif
+ 
+-#if defined(BOOST_INTEL) || defined(__SUNPRO_CC)
++#if defined(BOOST_INTEL) || defined(__SUNPRO_CC) || defined(__FCC_VERSION)
+     // Intel compiler and Sun Studio 12.3 have problems with friend declarations for nested class templates
+ #   define BOOST_LOG_NO_MEMBER_TEMPLATE_FRIENDS
+ #endif
 diff --git boost_1_55_0/boost/math/special_functions/lanczos.hpp boost_1_55_0/boost/math/special_functions/lanczos.hpp
 index ed89154..e8e4de6 100644
 --- boost_1_55_0/boost/math/special_functions/lanczos.hpp
