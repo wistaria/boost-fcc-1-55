@@ -328,7 +328,8 @@ rule init ( mpicxx ? : options * : mpirun-with-options * )
       result = [ SHELL "$(command) -showme" ] ;
     }
     # Look for MPICH
-    else if [ safe-shell-command "$(command) -show" ]
+    else if [ safe-shell-command "$(command) -show" ] &&
+              [ safe-shell-command "$(command) -compile_info" ]
     {
       if $(.debug-configuration)
       {
@@ -336,6 +337,27 @@ rule init ( mpicxx ? : options * : mpirun-with-options * )
       }
       compile_flags = [ SHELL "$(command) -compile_info" ] ;
       link_flags = [ SHELL "$(command) -link_info" ] ;
+    }
+    # Look for MPT
+    else if [ safe-shell-command "$(command) -show" ]
+    {
+      if $(.debug-configuration)
+      {
+        ECHO "Found MPT wrapper compiler: $(command)" ;
+      }
+
+      # 
+      compile_flags = [ SHELL "$(command) -show -c -v 2>/dev/null" ] ;
+      local front = [ MATCH "(.*)-v" :  $(compile_flags) ] ;
+      local back = [ MATCH "-v(.*)" :  $(compile_flags) ] ;
+      compile_flags = "$(front) $(back)" ;
+      front = [ MATCH "(.*)-c" :  $(compile_flags) ] ;
+      back = [ MATCH "-c(.*)" :  $(compile_flags) ] ;
+      compile_flags = "$(front) $(back)" ;
+      link_flags = [ SHELL "$(command) -show -v 2>/dev/null" ] ;
+      front = [ MATCH "(.*)-v" :  $(link_flags) ] ;
+      back = [ MATCH "-v(.*)" :  $(link_flags) ] ;
+      link_flags = "$(front) $(back)" ;
     }
     # Sun HPC and Ibm POE
     else if [ SHELL "$(command) -v 2>/dev/null" ]
