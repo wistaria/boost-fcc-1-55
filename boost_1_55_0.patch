@@ -117,6 +117,55 @@ index ed89154..e8e4de6 100644
  #if (defined(_M_IX86_FP) && (_M_IX86_FP >= 2)) || defined(__SSE2__)
  #include <boost/math/special_functions/detail/lanczos_sse2.hpp>
  #endif
+diff --git boost_1_55_0/boost/regex/v4/perl_matcher_common.hpp boost_1_55_0/boost/regex/v4/perl_matcher_common.hpp
+index 9a80e50..a6cdb82 100644
+--- boost_1_55_0/boost/regex/v4/perl_matcher_common.hpp
++++ boost_1_55_0/boost/regex/v4/perl_matcher_common.hpp
+@@ -154,7 +154,7 @@ void perl_matcher<BidiIterator, Allocator, traits>::estimate_max_state_count(std
+ }
+ 
+ template <class BidiIterator, class Allocator, class traits>
+-inline void perl_matcher<BidiIterator, Allocator, traits>::estimate_max_state_count(void*)
++void perl_matcher<BidiIterator, Allocator, traits>::estimate_max_state_count(void*)
+ {
+    // we don't know how long the sequence is:
+    max_state_count = BOOST_REGEX_MAX_STATE_COUNT;
+@@ -162,7 +162,7 @@ inline void perl_matcher<BidiIterator, Allocator, traits>::estimate_max_state_co
+ 
+ #ifdef BOOST_REGEX_HAS_MS_STACK_GUARD
+ template <class BidiIterator, class Allocator, class traits>
+-inline bool perl_matcher<BidiIterator, Allocator, traits>::protected_call(
++bool perl_matcher<BidiIterator, Allocator, traits>::protected_call(
+    protected_proc_type proc)
+ {
+    ::boost::re_detail::concrete_protected_call
+@@ -174,7 +174,7 @@ inline bool perl_matcher<BidiIterator, Allocator, traits>::protected_call(
+ #endif
+ 
+ template <class BidiIterator, class Allocator, class traits>
+-inline bool perl_matcher<BidiIterator, Allocator, traits>::match()
++bool perl_matcher<BidiIterator, Allocator, traits>::match()
+ {
+ #ifdef BOOST_REGEX_HAS_MS_STACK_GUARD
+    return protected_call(&perl_matcher<BidiIterator, Allocator, traits>::match_imp);
+@@ -224,7 +224,7 @@ bool perl_matcher<BidiIterator, Allocator, traits>::match_imp()
+ }
+ 
+ template <class BidiIterator, class Allocator, class traits>
+-inline bool perl_matcher<BidiIterator, Allocator, traits>::find()
++bool perl_matcher<BidiIterator, Allocator, traits>::find()
+ {
+ #ifdef BOOST_REGEX_HAS_MS_STACK_GUARD
+    return protected_call(&perl_matcher<BidiIterator, Allocator, traits>::find_imp);
+@@ -730,7 +730,7 @@ bool perl_matcher<BidiIterator, Allocator, traits>::match_backstep()
+ }
+ 
+ template <class BidiIterator, class Allocator, class traits>
+-inline bool perl_matcher<BidiIterator, Allocator, traits>::match_assert_backref()
++bool perl_matcher<BidiIterator, Allocator, traits>::match_assert_backref()
+ {
+    // return true if marked sub-expression N has been matched:
+    int index = static_cast<const re_brace*>(pstate)->index;
 diff --git boost_1_55_0/boost/smart_ptr/detail/sp_has_sync.hpp boost_1_55_0/boost/smart_ptr/detail/sp_has_sync.hpp
 index 16de21d..94d2a9a 100644
 --- boost_1_55_0/boost/smart_ptr/detail/sp_has_sync.hpp
@@ -261,3 +310,100 @@ index 0fe490b..03c2352 100644
      # Sun HPC and Ibm POE
      else if [ SHELL "$(command) -v 2>/dev/null" ]
      {
+diff --git boost_1_55_0/tools/build/v2/user-config.jam boost_1_55_0/tools/build/v2/user-config.jam
+index fbbf13f..e69de29 100644
+--- boost_1_55_0/tools/build/v2/user-config.jam
++++ boost_1_55_0/tools/build/v2/user-config.jam
+@@ -1,92 +0,0 @@
+-# Copyright 2003, 2005 Douglas Gregor
+-# Copyright 2004 John Maddock
+-# Copyright 2002, 2003, 2004, 2007 Vladimir Prus
+-# Distributed under the Boost Software License, Version 1.0.
+-# (See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt)
+-
+-#   This file is used to configure your Boost.Build installation. You can modify
+-# this file in place, or you can place it in a permanent location so that it
+-# does not get overwritten should you get a new version of Boost.Build. See:
+-#
+-#   http://www.boost.org/boost-build2/doc/html/bbv2/overview/configuration.html
+-#
+-# for documentation about possible permanent locations.
+-
+-#   This file specifies which toolsets (C++ compilers), libraries, and other
+-# tools are available. Often, you should be able to just uncomment existing
+-# example lines and adjust them to taste. The complete list of supported tools,
+-# and configuration instructions can be found at:
+-#
+-#   http://boost.org/boost-build2/doc/html/bbv2/reference/tools.html
+-#
+-
+-#   This file uses Jam language syntax to describe available tools. Mostly,
+-# there are 'using' lines, that contain the name of the used tools, and
+-# parameters to pass to those tools -- where paremeters are separated by
+-# semicolons. Important syntax notes:
+-#
+-#   - Both ':' and ';' must be separated from other tokens by whitespace
+-#   - The '\' symbol is a quote character, so when specifying Windows paths you
+-#     should use '/' or '\\' instead.
+-#
+-# More details about the syntax can be found at:
+-#
+-#   http://boost.org/boost-build2/doc/html/bbv2/advanced.html#bbv2.advanced.jam_language
+-#
+-
+-# ------------------
+-# GCC configuration.
+-# ------------------
+-
+-# Configure gcc (default version).
+-# using gcc ;
+-
+-# Configure specific gcc version, giving alternative name to use.
+-# using gcc : 3.2 : g++-3.2 ;
+-
+-
+-# -------------------
+-# MSVC configuration.
+-# -------------------
+-
+-# Configure msvc (default version, searched for in standard locations and PATH).
+-# using msvc ;
+-
+-# Configure specific msvc version (searched for in standard locations and PATH).
+-# using msvc : 8.0 ;
+-
+-
+-# ----------------------
+-# Borland configuration.
+-# ----------------------
+-# using borland ;
+-
+-
+-# ----------------------
+-# STLPort configuration.
+-# ----------------------
+-
+-#   Configure specifying location of STLPort headers. Libraries must be either
+-# not needed or available to the compiler by default.
+-# using stlport : : /usr/include/stlport ;
+-
+-# Configure specifying location of both headers and libraries explicitly.
+-# using stlport : : /usr/include/stlport /usr/lib ;
+-
+-
+-# -----------------
+-# QT configuration.
+-# -----------------
+-
+-# Configure assuming QTDIR gives the installation prefix.
+-# using qt ;
+-
+-# Configure with an explicit installation prefix.
+-# using qt : /usr/opt/qt ;
+-
+-# ---------------------
+-# Python configuration.
+-# ---------------------
+-
+-# Configure specific Python version.
+-# using python : 3.1 : /usr/bin/python3 : /usr/include/python3.1 : /usr/lib ;
