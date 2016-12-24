@@ -1,5 +1,5 @@
 # boost-fcc-1-55
-Porting Boost C++ Library to Fujitsu FX10 and the K computer
+Porting Boost C++ Library version 1_55_0 to Fujitsu FX10 and the K computer
 
 ## How to build and install Boost
 
