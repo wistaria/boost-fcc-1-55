@@ -1,4 +1,4 @@
-#!/bin/sh
+!/bin/sh
 
 SRC_DIR=$(dirname $0)
 . $SRC_DIR/version.sh
@@ -18,4 +18,4 @@ echo "sh -x)" >> fix-stage.sh
 echo "Fixing shared library search path..." | tee -a build-stage.log
 sh fix-stage.sh | tee -a build-stage.log
 mv -f $SRC_DIR/boost_$BOOST_VERSION/libboost* $SRC_DIR/boost_$BOOST_VERSION/stage/lib/
-(cd $SRC_DIR/boost_$BOOST_VERSION && grep '^    cp' build.log | grep 'release/threading-multi' | awk '{print $1,$3,$2}' | sh -x | tee -a build-stage.log
+(cd $SRC_DIR/boost_$BOOST_VERSION && grep '^    cp' build.log | grep 'release/threading-multi' | awk '{print $1,$3,$2}' | sh -x) | tee -a build-stage.log
