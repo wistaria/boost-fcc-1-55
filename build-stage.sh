@@ -1,4 +1,4 @@
-!/bin/sh
+#!/bin/sh
 
 SRC_DIR=$(dirname $0)
 . $SRC_DIR/version.sh
